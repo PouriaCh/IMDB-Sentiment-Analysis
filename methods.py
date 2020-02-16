@@ -1,226 +1,209 @@
-import numpy as np
-import matplotlib.pyplot as plt
+#########################################################################################################################
+#########################################################################################################################
 
-# Complementary Functions
+# This file contains all of the functions and classes
 
-# Weight vector initialization
-def weights_init(m, key):
-    # key = True => zero initialization
-    # key = False => Random initialization
-    if key:
-        w = np.zeros((m, 1))
-    else:
-        w = np.random.randi(m, 1)
+#########################################################################################################################
+#########################################################################################################################
+from nltk import word_tokenize
+from nltk.stem import WordNetLemmatizer
 
-    return w
+# Function to create Corpus
 
-
-###############################################################################
-
-# Text pre-processing
-
-def text_prep(text):
-    punctuations_list = '!-[]{};\,<>/"?#$%^&*_~+' + '\n\n'
-    output_text = ""
-    text = text.strip()
-
-    for ch in text:
-        if ch not in punctuations_list:
-            output_text = output_text + ch
-
-    output_text = output_text.lower()
-    prep_text = output_text.split(" ")
-    prep_text = list(filter(None, prep_text))
-
-    return prep_text
+def Corpus(filelist, root):
+    count = len(filelist)
+    corpus = [None] * count
+    for i in range(count):
+        fid = open(root + filelist[i], 'r', encoding='utf-8')
+        text = fid.read()
+        corpus[i] = text.replace('\n', '')
+        fid.close()
+    return corpus
 
 
-###############################################################################
+#########################################################################################################################
 
-# Most-frequent word count features for the whole Training set
-def Feature_Matrix(dataset, no_txt_features):
-    offensive_words_list = ['shit', 'fuck', 'fucking', 'bitch', 'damn', 'sex', 'ass', 'hell',
-                            'hot', 'dick', 'shitty', 'fucked', 'asshole', 'bullshit', 'gay', 'porn', 'crap', 'sucks']
+# Delete stop words
 
-    positive_sentiments_list = ['like', 'really', 'good', 'please', 'love', 'pretty', 'best',
-                                'better', 'great', 'movie', 'happy', 'watching', 'nice', 'fun',
-                                'thanks', 'thank', 'funny', 'cool', 'thankfully', 'super', 'enjoy',
-                                'awesome', 'wow', 'amazing', 'interesting', 'loved’, ‘liked', 'perfect',
-                                'fan', 'glad', 'haha', 'fans', 'hilarious', 'popular', 'fair', 'special',
-                                'beautiful', ':d', ':)', '=d']
+def delStopWords(corpus):
+    # List of stop-words from SEO PowerSuite
 
-    negative_sentiments_list = ['bad', 'hate', 'wrong', 'lost', 'damn', 'hell', 'sorry', 'dead', 'weird', 'shitty',
-                                'worst', 'terrible', 'worse', 'sad', 'seeing', 'die', 'death', 'died', 'kill', 'poor',
-                                'breaking', 'horrible', ':(', '=(']
+    stopwords_list = ["a", "about", "above", "after", "again", "against", "ain", "all", "am", "an", "and", "any", "are",
+                      "aren",
+                      "aren't", "as", "at", "be", "because", "been", "before", "being", "below", "between", "both",
+                      "but", "by",
+                      "can", "couldn", "couldn't", "d", "did", "didn", "didn't", "do", "does", "doesn", "doesn't",
+                      "doing", "don",
+                      "don't", "down", "during", "each", "few", "for", "from", "further", "had", "hadn", "hadn't",
+                      "has", "hasn",
+                      "hasn't", "have", "haven", "haven't", "having", "he", "her", "here", "hers", "herself", "him",
+                      "himself",
+                      "his", "how", "i", "if", "in", "into", "is", "isn", "isn't", "it", "it's", "its", "itself",
+                      "just", "ll",
+                      "m", "ma", "me", "mightn", "mightn't", "more", "most", "mustn", "mustn't", "my", "myself",
+                      "needn", "needn't",
+                      "no", "nor", "not", "now", "o", "of", "off", "on", "once", "only", "or", "other", "our", "ours",
+                      "ourselves",
+                      "out", "over", "own", "re", "s", "same", "shan", "shan't", "she", "she's", "should", "should've",
+                      "shouldn",
+                      "shouldn't", "so", "some", "such", "t", "than", "that", "that'll", "the", "their", "theirs",
+                      "them",
+                      "themselves", "then", "there", "these", "they", "this", "those", "through", "to", "too", "under",
+                      "until",
+                      "up", "ve", "very", "was", "wasn", "wasn't", "we", "were", "weren", "weren't", "what", "when",
+                      "where",
+                      "which", "while", "who", "whom", "why", "will", "with", "won", "won't", "wouldn", "wouldn't", "y",
+                      "you",
+                      "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves", "could", "he'd",
+                      "he'll",
+                      "he's", "here's", "how's", "i'd", "i'll", "i'm", "i've", "let's", "ought", "she'd", "she'll",
+                      "that's",
+                      "there's", "they'd", "they'll", "they're", "they've", "we'd", "we'll", "we're", "we've", "what's",
+                      "when's",
+                      "where's", "who's", "why's", "would", "able", "abst", "accordance", "according", "accordingly",
+                      "across",
+                      "act", "actually", "added", "adj", "affected", "affecting", "affects", "afterwards", "ah",
+                      "almost", "alone",
+                      "along", "already", "also", "although", "always", "among", "amongst", "announce", "another",
+                      "anybody",
+                      "anyhow", "anymore", "anyone", "anything", "anyway", "anyways", "anywhere", "apparently",
+                      "approximately",
+                      "arent", "arise", "around", "aside", "ask", "asking", "auth", "available", "away", "awfully", "b",
+                      "back",
+                      "became", "become", "becomes", "becoming", "beforehand", "begin", "beginning", "beginnings",
+                      "begins",
+                      "behind", "believe", "beside", "besides", "beyond", "biol", "brief", "briefly", "c", "ca", "came",
+                      "cannot",
+                      "can't", "cause", "causes", "certain", "certainly", "co", "com", "come", "comes", "contain",
+                      "containing",
+                      "contains", "couldnt", "date", "different", "done", "downwards", "due", "e", "ed", "edu",
+                      "effect", "eg",
+                      "eight", "eighty", "either", "else", "elsewhere", "end", "ending", "enough", "especially", "et",
+                      "etc",
+                      "even", "ever", "every", "everybody", "everyone", "everything", "everywhere", "ex", "except", "f",
+                      "far",
+                      "ff", "fifth", "first", "five", "fix", "followed", "following", "follows", "former", "formerly",
+                      "forth",
+                      "found", "four", "furthermore", "g", "gave", "get", "gets", "getting", "give", "given", "gives",
+                      "giving",
+                      "go", "goes", "gone", "got", "gotten", "h", "happens", "hardly", "hed", "hence", "hereafter",
+                      "hereby",
+                      "herein", "heres", "hereupon", "hes", "hi", "hid", "hither", "home", "howbeit", "however",
+                      "hundred", "id",
+                      "ie", "im", "immediate", "immediately", "importance", "important", "inc", "indeed", "index",
+                      "information",
+                      "instead", "invention", "inward", "itd", "it'll", "j", "k", "keep", "keeps", "kept", "kg", "km",
+                      "know",
+                      "known", "knows", "l", "largely", "last", "lately", "later", "latter", "latterly", "least",
+                      "less", "lest",
+                      "let", "lets", "like", "liked", "likely", "line", "little", "'ll", "look", "looking", "looks",
+                      "ltd", "made",
+                      "mainly", "make", "makes", "many", "may", "maybe", "mean", "means", "meantime", "meanwhile",
+                      "merely", "mg",
+                      "might", "million", "miss", "ml", "moreover", "mostly", "mr", "mrs", "much", "mug", "must", "n",
+                      "na", "name",
+                      "namely", "nay", "nd", "near", "nearly", "necessarily", "necessary", "need", "needs", "neither",
+                      "never",
+                      "nevertheless", "new", "next", "nine", "ninety", "nobody", "non", "none", "nonetheless", "noone",
+                      "normally",
+                      "nos", "noted", "nothing", "nowhere", "obtain", "obtained", "obviously", "often", "oh", "ok",
+                      "okay", "old",
+                      "omitted", "one", "ones", "onto", "ord", "others", "otherwise", "outside", "overall", "owing",
+                      "p", "page",
+                      "pages", "part", "particular", "particularly", "past", "per", "perhaps", "placed", "please",
+                      "plus", "poorly",
+                      "possible", "possibly", "potentially", "pp", "predominantly", "present", "previously",
+                      "primarily",
+                      "probably", "promptly", "proud", "provides", "put", "q", "que", "quickly", "quite", "qv", "r",
+                      "ran", "rather",
+                      "rd", "readily", "really", "recent", "recently", "ref", "refs", "regarding", "regardless",
+                      "regards",
+                      "related", "relatively", "research", "respectively", "resulted", "resulting", "results", "right",
+                      "run",
+                      "said", "saw", "say", "saying", "says", "sec", "section", "see", "seeing", "seem", "seemed",
+                      "seeming", "seems",
+                      "seen", "self", "selves", "sent", "seven", "several", "shall", "shed", "shes", "show", "showed",
+                      "shown",
+                      "showns", "shows", "significant", "significantly", "similar", "similarly", "since", "six",
+                      "slightly",
+                      "somebody", "somehow", "someone", "somethan", "something", "sometime", "sometimes", "somewhat",
+                      "somewhere",
+                      "soon", "sorry", "specifically", "specified", "specify", "specifying", "still", "stop",
+                      "strongly", "sub",
+                      "substantially", "successfully", "sufficiently", "suggest", "sup", "sure", "take", "taken",
+                      "taking", "tell",
+                      "tends", "th", "thank", "thanks", "thanx", "thats", "that've", "thence", "thereafter", "thereby",
+                      "thered",
+                      "therefore", "therein", "there'll", "thereof", "therere", "theres", "thereto", "thereupon",
+                      "there've",
+                      "theyd", "theyre", "think", "thou", "though", "thoughh", "thousand", "throug", "throughout",
+                      "thru", "thus",
+                      "til", "tip", "together", "took", "toward", "towards", "tried", "tries", "truly", "try", "trying",
+                      "ts", "twice",
+                      "two", "u", "un", "unfortunately", "unless", "unlike", "unlikely", "unto", "upon", "ups", "us",
+                      "use", "used",
+                      "useful", "usefully", "usefulness", "uses", "using", "usually", "v", "value", "various", "'ve",
+                      "via", "viz",
+                      "vol", "vols", "vs", "w", "want", "wants", "wasnt", "way", "wed", "welcome", "went", "werent",
+                      "whatever",
+                      "what'll", "whats", "whence", "whenever", "whereafter", "whereas", "whereby", "wherein", "wheres",
+                      "whereupon", "wherever", "whether", "whim", "whither", "whod", "whoever", "whole", "who'll",
+                      "whomever",
+                      "whos", "whose", "widely", "willing", "wish", "within", "without", "wont", "words", "world",
+                      "wouldnt", "www",
+                      "x", "yes", "yet", "youd", "youre", "z", "zero", "a's", "ain't", "allow", "allows", "apart",
+                      "appear",
+                      "appreciate", "appropriate", "associated", "best", "better", "c'mon", "c's", "cant", "changes",
+                      "clearly",
+                      "concerning", "consequently", "consider", "considering", "corresponding", "course", "currently",
+                      "definitely", "described", "despite", "entirely", "exactly", "example", "going", "greetings",
+                      "hello",
+                      "help", "hopefully", "ignored", "inasmuch", "indicate", "indicated", "indicates", "inner",
+                      "insofar", "it'd",
+                      "keep", "keeps", "novel", "presumably", "reasonably", "second", "secondly", "sensible", "serious",
+                      "seriously", "sure", "t's", "third", "thorough", "thoroughly", "three", "well", "wonder"]
 
-    N = len(dataset)
-    All_comments = [None] * N
-    Words_Dict = {}
-    bias = np.ones((N, 1))
-    controversiality_vec = np.zeros((N, 1))
-    is_root_vec = np.zeros((N, 1))
-    children_vec = np.zeros((N, 1))
-    Y = np.zeros((N, 1))
-    X_words_count = np.zeros((N, no_txt_features))
-    offensive_count = np.zeros((N, 1))
-    http_count = np.zeros((N, 1))
-    positive_sentiments = np.zeros((N, 1))
-    negative_sentiments = np.zeros((N, 1))
+    # stop-words
+    swcount = len(stopwords_list)
+    corpus_length = len(corpus)
 
-    for i in range(N):
-        for key, val in dataset[i].items():
-            if key == 'text':
-                preprocessed_text = text_prep(val)
-                All_comments[i] = preprocessed_text
-                for x in preprocessed_text:
-                    if x not in Words_Dict.keys():
-                        Words_Dict[x] = 0
-                    Words_Dict[x] += 1
-
-            elif key == 'is_root':
-                if val:
-                    is_root_vec[i] = 1
-                else:
-                    is_root_vec[i] = 0
-
-            elif key == 'controversiality':
-                controversiality_vec[i] = val
-
-            elif key == 'children':
-                children_vec[i] = val
-
-            elif key == 'popularity_score':
-                Y[i] = val
-
-    # Now we need to sort out from most-frequent to least-frequent words in dictionary to obtain the first N words
-    if no_txt_features == 0:
-
-        X1 = np.append(children_vec, controversiality_vec, axis=1)
-        X1 = np.append(X1, is_root_vec, axis=1)
-        X = np.append(X1, bias, axis=1)
-
-    else:
-        Words_Dict_Sorted = sorted(Words_Dict.items(), key=lambda t: t[1], reverse=True)
-        Most_Freq_Words_Dict = dict(list(Words_Dict_Sorted[:no_txt_features]))
-        Most_Freq_Words = list(Most_Freq_Words_Dict.keys())
-
-        # Now we need to count the frequency of most frequent words in each comment throughout the whole dataset
-
-        # Most-Frequent words
-        for i in range(N):
-            for j in range(no_txt_features):
-                X_words_count[i, j] = All_comments[i].count(Most_Freq_Words[j])
-
-                # Offensive and HTTP-containing comments
-
-        for i in range(N):
-            for x in All_comments[i]:
-                if x.find('http') or x.find('www.') != -1:
-                    http_count[i] = 1
-
-                for l in range(len(positive_sentiments_list)):
-                    if x.find(positive_sentiments_list[l]) != -1:
-                        positive_sentiments[i] += 1
-
-                for l in range(len(negative_sentiments_list)):
-                    if x.find(negative_sentiments_list[l]) != -1:
-                        negative_sentiments[i] += 1
-
-            for j in range(len(offensive_words_list)):
-                offensive_count[i] += All_comments[i].count(offensive_words_list[j])
-
-        for j in range(len(offensive_words_list)):
-            if offensive_count[i] > 0:
-                offensive_count[i] = 1
-
-        # Positive or negative sentiments
-
-        X1 = np.append(X_words_count, controversiality_vec, axis=1)
-        X1 = np.append(X1, is_root_vec, axis=1)
-        X1 = np.append(X1, children_vec, axis=1)
-        X1 = np.append(X1, offensive_count, axis=1)
-        X1 = np.append(X1, http_count, axis=1)
-        X1 = np.append(X1, positive_sentiments, axis=1)
-        X1 = np.append(X1, negative_sentiments, axis=1)
-
-        # Data Rescaling
-
-        for i in range(X1.shape[1]):
-            mean = np.mean(X1[:, i])
-            var = np.var(X1[:, i])
-            X1[:, i] = (1 / np.sqrt(var)) * (X1[:, i] - mean)
-
-        X = np.append(X1, bias, axis=1)
-
-    return X, Y, Most_Freq_Words_Dict
-
-
-###############################################################################
-
-# Visualisations
-def lineplot(x_data, y_data, x_label="", y_label="", title="", gcolor=""):
-    # Create the plot object
-    plt.figure()
-    # Plot the best fit line, set the linewidth (lw), color and
-    # transparency (alpha) of the line
-    plt.plot(x_data, y_data, lw=2, color=gcolor, alpha=1)
-    # Label the axes and provide a title
-    plt.title(title)
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    plt.show()
-
-
-###############################################################################
-
-# MSE
-def Mean_Square_Error(X, Y, w_hat):
-    prediction = np.dot(X, w_hat)
-    abs_err = np.subtract(Y, prediction)
-    squared_err = np.square(abs_err)
-    MSE = (1 / X.shape[0]) * np.sum(squared_err)
-    return MSE
-
-
-###############################################################################
-
-# Gradient Descent
-def Gradient_Descent(X, Y, W0, B, E, eps):
-    eta0 = E
-    beta = B
-    epsilon = eps
-    w0 = W0
-    mse = np.zeros(100000000)  # some big number for number of epochs
-    X_T = np.dot(X.T, X)
-    X_Y = np.dot(X.T, Y)
-    alpha = eta0 / (1 + beta)
-    w_gd = w0 - 2 * alpha * (np.subtract(np.dot(X_T, w0), X_Y))
-    diff = np.linalg.norm(np.subtract(w_gd, w0))
-    epoch = 0
-    mse[epoch] = Mean_Square_Error(X, Y, w_gd)
-
-    while diff > epsilon:
-        w0 = w_gd
-        alpha = eta0 / (1 + beta * (epoch + 1))
-        w_gd = w0 - 2 * alpha * np.subtract((X_T).dot(w0), X_Y)
-        diff = np.linalg.norm(np.subtract(w_gd, w0))
-        epoch += 1
-        mse[epoch] = Mean_Square_Error(X, Y, w_gd)
-
-    MSE = np.delete(mse, np.s_[epoch + 1: len(mse) + 1])  # Removing zero-valued MSE at the end
-
-    return w_gd, MSE
+    for comment in corpus:
+        for sword in stopwords_list:
+            if sword in comment:
+                comment = comment.replace(sword, '')
+    #     corpus = corpDenoising(corpus)
+    return corpus
 
 
-###############################################################################
+#########################################################################################################################
 
-# Least-Square estimation
+# Function to write test predictions to .csv file
 
-def Least_Squares_Estimation(X, Y):
-    X_T = (X.T).dot(X)
-    X_T_inv = np.linalg.inv(X_T)
-    X_Y = (X.T).dot(Y)
-    w_hat = np.dot(X_T_inv, X_Y)
+def csvWriter(prediction, submission_no):
+    index = 0
+    filename = 'G_24_submission_' + str(submission_no) + '.csv'
+    csv = open(filename, "w")
 
-    return w_hat
+    columnTitleRow = "Id,Category\n"
+    csv.write(columnTitleRow)
+
+    for i in prediction:
+        csv.write(str(index) + ',' + str(i) + "\n")
+        index += 1
+
+    csv.close()
+
+
+#########################################################################################################################
+
+# Lemma Tokenizer class for lemmatization
+
+class LemmaTokenizer(object):
+    def __init__(self):
+        self.wnl = WordNetLemmatizer()
+
+    def __call__(self, doc):
+        return [self.wnl.lemmatize(t) for t in word_tokenize(doc)]
+
+#########################################################################################################################
 
