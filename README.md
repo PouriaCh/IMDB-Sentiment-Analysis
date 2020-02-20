@@ -12,7 +12,7 @@ Install the following packages:
 * os == 1.3
 * Scikit-Learn
 * NLTK
-* csv (if you want to export the predictions for test set)
+* csv (if you want to export the test set predictions)
 * NumPy
 ### Experiment
 Download the repository in your local computer. 
