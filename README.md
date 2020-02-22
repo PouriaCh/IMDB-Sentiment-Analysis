@@ -20,5 +20,3 @@ Download the repository in your local computer.
 git clone https://github.com/PouriaCh/IMDB-Sentiment-Analysis.git
 ```
 If all of the required packages are installed, you will have the results. Feel free to modify the parameters in the code.
-## Acknowledgement
-This project was done as part of the COMP551 (Applied Machine Learning) course in McGill University.
